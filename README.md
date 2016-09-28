@@ -1,5 +1,5 @@
 # CNProj
-ANQ or ENQ
+ENQ
 
 Toh bhai log idhar hota hai apna kaam.
 
