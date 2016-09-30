@@ -2,9 +2,13 @@
 	Class definitions:-
 		Question
 		Game
+
 	Utility Functions:-
 		bool isExists(int *, int, int);
 		void getRandoms(int *, int);
+
+	Pre processor constants:-
+		GAME_LENGTH - number of questions in a game
 */
 
 
