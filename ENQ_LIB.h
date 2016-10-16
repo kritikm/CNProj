@@ -22,7 +22,7 @@
 using namespace std;
 
 
-bool isExists(int * arr, int size, int key)
+bool Exists(int * arr, int size, int key)
 {
 	for (int i = 0; i < size; i++)
 		if (arr[i] == key)
@@ -40,7 +40,7 @@ void getRandoms(int * arr, int size)
 
 		do {
 			gen = rand() % 50;
-		} while (isExists(arr, i, gen));
+		} while (Exists(arr, i, gen));
 
 		arr[i] = gen;
 	}
@@ -77,9 +77,11 @@ public:
 	void saveToFile(string filePath)
 	{
 		fstream qFile;
-		qFile.open(filePath, ios::ate | ios::binary);
+		qFile.open(filePath, ios::_Nocreate | ios::binary);
+		if (qFile.is_open() == false)
+			cout << "Faak";
 		qFile.write((char *)this, sizeof(Question));
-		n_Questions++;
+		//n_Questions++;
 	}
 };
 
@@ -93,7 +95,7 @@ class Game
 	*/
 
 	list<Question> quiz;
-	
+
 	Game(string filePath)
 	{
 		int sequence[GAME_LENGTH];
