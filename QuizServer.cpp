@@ -64,7 +64,7 @@ int main()
 	//Set up Server socket address
 	struct sockaddr_in servadd;
 	servadd.sin_family = AF_INET;
-	servadd.sin_addr.s_addr = inet_addr("127.0.0.1");
+	servadd.sin_addr.s_addr = inet_addr("10.0.2.15");
 	servadd.sin_port = htons(9407);
 
 	//Bind the socket address with the client
