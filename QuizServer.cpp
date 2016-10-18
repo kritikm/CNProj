@@ -56,8 +56,9 @@ int main()
 
 	lsd = socket(AF_INET,SOCK_STREAM,0);						//setting up listen sd
 
-	int * Players = (int *)calloc(nPLAYERS,sizeof(int));		//stores the values of socket descriptaars which are actually integers
-	int * PlayerState = (int *)calloc(nPLAYERS,sizeof(int));   	//All players will be in lobby initially
+	int *Players = new int[nPLAYERS];                   		//stores the values of socket descriptaars which are actually integers
+    int *PlayerState = new int[nPLAYERS];                    	//All players will be in lobby initially
+
 
 	struct sockaddr_in clntadd;
 
@@ -92,7 +93,7 @@ int main()
 		playercount++;										//Keeps count of total number of players. Used later to get the current players index
 
 		//Accept Player choice
-		recv(sd,(int *)&choice,sizeof(choice),0);
+		read(sd, &choice, sizeof(choice));
 
 
 		if(choice == 1)										//Player chooses play
