@@ -30,21 +30,36 @@ int main()
 	cout<<"1 : Play  2 : Spectate\n";
 	cin>>choice;
 
-	send(sd,(int *)&choice,sizeof(choice),0);
+	write(sd,&choice,sizeof(&choice));
 
 	//Get the server response on whether the Player should wait or start match
-	recv(sd,(int *)&ServerResponse,sizeof(ServerResponse),0);
+	read(sd,&ServerResponse,sizeof(ServerResponse));
 
    	//if No players are found
     while(ServerResponse == NOPLAYERFOUND && ServerResponse != PLAYERFOUND)
 	{
 		//wait here until the server sends message PLAYERFOUND
-		recv(sd,(int *)&ServerResponse,sizeof(ServerResponse),0);	//I assume here that the recv message waits for a response. If not, use read
+		read(sd,&ServerResponse,sizeof(ServerResponse));	//I assume here that the recv message waits for a response. If not, use read
 		//put in while in case we get NOPLAYERFOUND again
 	}
 
 	//If you have reached this point it means a player has been found
 
+    cout<<"Game started!\n";
+	char * buf;
+    char correctAnswer;
+    int length;
+    read(sd, &length, sizeof(length));
+    read(sd, buf, length);
+    read(sd, &correctAnswer, sizeof(correctAnswer));
+
+    cout<<"The correct answer is\n"<<correctAnswer<<endl;
+
+//	int ques = read(sd, buf, sizeof(buf));
+//	cout<<"Received quest "<<ques<<endl;
+//	read(sd, &correctAnswer, sizeof(correctAnswer));
+//
+//    cout<<"Server sent "<<buf<<" and the correct answer is "<<correctAnswer;
 	//TODO KRITIK implement code here to handle the game
 
 	return 0;
