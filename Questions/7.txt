@@ -1,0 +1,7 @@
+Which animal is a feline?
+
+A. Lion
+B. Tiger
+C. Cat
+D. All of the above
+:C
