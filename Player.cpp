@@ -59,7 +59,6 @@ int main()
 	char * buf;
     char correctAnswer;
     char playerAnswer;
-    char playerAnswer;
     int length;
     int score = 0;
     int gameLength;
@@ -90,9 +89,8 @@ int main()
         setUpPlayArea(i + 1, question, optionA, optionB, optionC, optionD);
 
         cin>>playerAnswer;
-        if(playerAnswer != 'y')
-            send(sd, (char *)&playerAnswer, sizeof(length), 0);
-
+        int state = send(sd, (char *)&playerAnswer, sizeof(length), 0);
+        cout<<state<<endl;
         if(playerAnswer == correctAnswer)
         {
             score++;
