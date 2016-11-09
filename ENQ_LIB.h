@@ -4,7 +4,7 @@
 		Game
 
 	Utility Functions:-
-		bool isExists(int *, int, int);
+		bool Exists(int *, int, int);
 		void getRandoms(int *, int);
 
 	Pre processor constants:-
@@ -23,7 +23,7 @@
 using namespace std;
 
 
-bool isExists(int * arr, int size, int key)
+bool Exists(int * arr, int size, int key)
 {
 	for (int i = 0; i < size; i++)
 		if (arr[i] == key)
@@ -41,7 +41,7 @@ void getRandoms(int * arr, int size)
 
 		do {
 			gen = rand() % 50;
-		} while (isExists(arr, i, gen));
+		} while (Exists(arr, i, gen));
 
 		arr[i] = gen;
 	}
