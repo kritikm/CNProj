@@ -11,7 +11,6 @@ try:
         # print filename
         file_old = open(filename, 'r')
         file_new = open("Formatted/" + filename, 'w')
-        counter = 0
         for each_line in file_old:
             # print each_line
             if len(each_line) == 1:
