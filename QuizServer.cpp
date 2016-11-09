@@ -9,13 +9,14 @@
 #include <arpa/inet.h>
 #include<vector>
 #include<thread>
-#include<future>
 #include<string.h>
+#include<pthread.h>
 #include"ENQ_LIB.h"
 
 using namespace std;
 
 #define nPLAYERS 10
+#define nQUESTIONS 2
 
 #define EMPTY      0
 #define PLAYING    1
@@ -53,27 +54,50 @@ int GetFirstWaitingPlayer(int * playerState)
 	return -1;
 }
 
-//Sends a question to the player and gets his / her answer
-int sendQuestion(Question toSend, int playerIndex)
+void playerGame(int sequence, int playerDescriptor, Question toSend, int * playerScore)
 {
-    string question = toSend.question + toSend.optionA + toSend.optionC + toSend.optionD + toSend.correctAnswer;
-    write(playerIndex, question.c_str(), question.length());
-    char submittedAnswer;
-    read(playerIndex, &submittedAnswer, sizeof(submittedAnswer));
+    string toSendString = toSend.question +
+                        toSend.optionA +
+                        "?" + toSend.optionB +
+                        "?" + toSend.optionC +
+                        "?" + toSend.optionD;
 
-    return submittedAnswer;
+    int length = toSendString.length();
+    char * buf = strdup(toSendString.c_str());
+    char correctAnswer = toSend.correctAnswer;
+    char playerAnswer = 'y';
+
+    //SEND LENGTH OF THE QUESTION STRING
+    send(playerDescriptor, (int *)&length, sizeof(length), 0);
+
+    //SEND THE QUESTION STRING
+    send(playerDescriptor, buf, length + 1, 0);
+
+    //SEND THE CORRECT ANSWER
+    send(playerDescriptor, (char *)&correctAnswer, sizeof(length), 0);
+
+    //GET ANSWER FROM PLAYER
+    recv(playerAnswer,(char *)&playerAnswer,sizeof(length),MSG_WAITALL);
+
+    if(playerAnswer == correctAnswer)
+    {
+        (*playerScore)++;
+        cout<<"\nPlayer "<<playerDescriptor<<" answered correctly!\n";
+    }
+    else
+        cout<<"\nPlayer "<<playerDescriptor<<" answered incorrectly\n";
+
+    cout<<"Score of Player "<<playerDescriptor<<": "<<*playerScore<<endl;
+
 
 }
 
 int main()
 {
 	int lsd,sd,choice,response,playercount = 0;
-	int fd[2];
-
-	pipe(fd);
 
 	lsd = socket(AF_INET,SOCK_STREAM,0);						//setting up listen sd
-
+    cout<<lsd<<endl;
 	int *Players = (int *)mmap(0, nPLAYERS * sizeof(int),
                     PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED,
                     -1, 0);                   		//stores the values of socket descriptaars which are actually integers
@@ -167,42 +191,44 @@ int main()
                     cout<<endl;
 
                     vector<Question> questions;
+
+                    int gameLength = nQUESTIONS;
+                    int playerOneScore = 0, playerTwoScore = 0;
+
+                    //SEND THE NUMBER OF QUESTIONS TO PLAYERS
+                    send(Players[*thisPlayerIndex], (int *)&gameLength, sizeof(gameLength), 0);
+                    send(Players[*competitorIndex], (int *)&gameLength, sizeof(gameLength), 0);
+
+                    //HARDCODED QUESTIONS
                     questions.push_back(Question("Who am I?", "God", "Kritik", "Batman", "John Cena", 'b'));
                     questions.push_back(Question("What are you?", "Man", "Funny", "Punny", "Never gonna give you up", 'd'));
 
+                    for(int i = 0; i < gameLength; i++)
+                    {
+                        Question toSend = questions.at(i);
 
-                    Question toSend = questions.at(0);
-                    string toSendString = toSend.question + toSend.optionA + toSend.optionB + toSend.optionC + toSend.optionD;
-                    int length = toSendString.length();
-                    char * buf = strdup(toSendString.c_str());
-                    char correctAnswer = toSend.correctAnswer;
+                        thread pOneThread(playerGame, i, Players[*thisPlayerIndex], toSend, &playerOneScore);
+                        thread pTwoThread(playerGame, i, Players[*competitorIndex], toSend, &playerTwoScore);
 
-                    cout<<"Sending length "<<length<<endl;
-                    send(Players[*thisPlayerIndex], (int *)&length, sizeof(length), 0);
-                    send(Players[*competitorIndex], (int *)&length, sizeof(length), 0);
+                        pOneThread.join();
+                        pTwoThread.join();
+                    }
 
-                    cout<<"Sending Question "<<buf<<endl;
-                    send(Players[*thisPlayerIndex], buf, length, 0);
-                    send(Players[*competitorIndex], buf, length, 0);
+                    cout<<"Game Over\nPlayer "<<Players[*thisPlayerIndex]<<" scored: "<<playerOneScore;
+                    cout<<"\nPlayer "<<Players[*competitorIndex]<<" scored: "<<playerTwoScore<<endl;
 
-                    cout<<"Sending answer "<<correctAnswer<<endl;
-                    send(Players[*thisPlayerIndex], &correctAnswer, sizeof(correctAnswer), 0);
-                    send(Players[*competitorIndex], &correctAnswer, sizeof(correctAnswer), 0);
-//                    write(Players[*competitorIndex], &correctAnswer, sizeof(&correctAnswer));
-//                    write(Players[*thisPlayerIndex], buf, sizeof(buf));
-//                    write(Players[*thisPlayerIndex], &correctAnswer, sizeof(&correctAnswer));
+//                    cout<<"Sending length "<<length<<endl;
+//                    send(Players[*competitorIndex], (int *)&length, sizeof(length), 0);
+//
+//                    cout<<"Sending Question "<<buf<<endl;
+//                    send(Players[*thisPlayerIndex], buf, length + 1, 0);
+//                    send(Players[*competitorIndex], buf, length + 1, 0);
 
-
-//                    auto playerOneAnswer = async(sendQuestion, question, Players[competitorIndex]);
-//                    auto playerTwoAnswer = async(sendQuestion, question, Players[thisPlayerIndex]);
-
-//                    cout<<"Player one answered "<<playerOneAnswer<<" and player two answered "<<playerTwoAnswer<<endl;
-
-
+//                    cout<<"Sending answer "<<correctAnswer<<endl;
+//                    send(Players[*thisPlayerIndex], (char *)&correctAnswer, sizeof(length), 0);
+//                    send(Players[*competitorIndex], (char *)&correctAnswer, sizeof(length), 0);
 
 					//TODO KRITIK Set up a match between current player and the player whose index we just received
-
-					//the socket descriptaars of the two players can be accesed through Players[thisPlayerIndex] and Players[competitorIndex]
 
 					close(Players[*thisPlayerIndex]);
 					close(Players[*competitorIndex]);

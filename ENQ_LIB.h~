@@ -92,15 +92,11 @@ class Game
 	*/
 
 	list<Question> quiz;
-	int playerOne, playerTwo;
-	int playerOneScore, playerTwoScore;
 
 	Game(string filePath)
 	{
 		int sequence[GAME_LENGTH];
 		getRandoms(sequence, GAME_LENGTH);
-		playerOneScore = 0;
-		playerTwoScore = 0;
 
 		//get questions from 'filePath'
 	}

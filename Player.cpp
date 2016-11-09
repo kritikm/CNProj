@@ -5,11 +5,21 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include<string>
 
 using namespace std;
 
 #define PLAYERFOUND 1
 #define NOPLAYERFOUND -1
+
+void setUpPlayArea(int sequence, string question, string optionA, string optionB, string optionC, string optionD)
+{
+    cout<<"**********\nQuestion "<<sequence<<"\n\n";
+
+    cout<<question<<"\n\nA:"<<optionA<<"\nB:"<<optionB<<"\nC:"<<optionC<<"\nD:"<<optionD<<endl;
+    cout<<"Your answer here: ";
+
+}
 
 int main()
 {
@@ -48,12 +58,53 @@ int main()
     cout<<"Game started!\n";
 	char * buf;
     char correctAnswer;
+    char playerAnswer;
+    char playerAnswer;
     int length;
-    read(sd, &length, sizeof(length));
-    read(sd, buf, length);
-    read(sd, &correctAnswer, sizeof(correctAnswer));
+    int score = 0;
+    int gameLength;
 
-    cout<<"The correct answer is\n"<<correctAnswer<<endl;
+    read(sd, &gameLength, sizeof(gameLength));
+    cout<<gameLength<<endl;
+
+    for(int i = 0; i < gameLength; i++)
+    {
+        playerAnswer = 'y';
+        read(sd, &length, sizeof(length));
+        buf = new char[length];
+        read(sd, buf, length + 1);
+        read(sd, &correctAnswer, sizeof(length));
+
+
+        string receivedQuestion(buf);
+
+        string question = receivedQuestion.substr(0, receivedQuestion.find('?') + 1);
+        receivedQuestion = receivedQuestion.substr(receivedQuestion.find('?') + 1);
+        string optionA = receivedQuestion.substr(0, receivedQuestion.find('?'));
+        receivedQuestion = receivedQuestion.substr(receivedQuestion.find('?') + 1);
+        string optionB = receivedQuestion.substr(0, receivedQuestion.find('?'));
+        receivedQuestion = receivedQuestion.substr(receivedQuestion.find('?') + 1);
+        string optionC = receivedQuestion.substr(0, receivedQuestion.find('?'));
+        string optionD = receivedQuestion.substr(receivedQuestion.find('?') + 1);
+
+        setUpPlayArea(i + 1, question, optionA, optionB, optionC, optionD);
+
+        cin>>playerAnswer;
+        if(playerAnswer != 'y')
+            send(sd, (char *)&playerAnswer, sizeof(length), 0);
+
+        if(playerAnswer == correctAnswer)
+        {
+            score++;
+            cout<<"\nCorrect answer!\n";
+        }
+        else
+        {
+            cout<<"\nIncorrect Answer!\n";
+        }
+        cout<<"Your score is "<<score<<endl;
+    }
+
 
 //	int ques = read(sd, buf, sizeof(buf));
 //	cout<<"Received quest "<<ques<<endl;
