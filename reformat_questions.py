@@ -15,7 +15,7 @@ try:
             # print each_line
             if len(each_line) == 1:
                 continue
-            print each_line + str(len(each_line))
+            # print each_line + str(len(each_line))
             if '.' in each_line:
                 each_line = each_line[3:]
             if ':' in each_line:
