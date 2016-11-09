@@ -14,10 +14,11 @@
 
 #include<string>
 #include<fstream>
-#include<list>
+#include<vector>
 #include<cstdlib>
 #include<ctime>
-#define GAME_LENGTH 10
+
+#define GAME_LENGTH 2
 #define PORT 9408
 
 using namespace std;
@@ -40,12 +41,13 @@ void getRandoms(int * arr, int size)
 		int gen;
 
 		do {
-			gen = rand() % 50;
+			gen = rand() % size + 1;
 		} while (Exists(arr, i, gen));
 
 		arr[i] = gen;
 	}
 }
+
 
 class Question
 {
@@ -73,14 +75,6 @@ public:
 		correctAnswer = isCorrect;
 
 	}
-
-//	void saveToFile(string filePath)
-//	{
-//		fstream qFile;
-//		qFile.open(filePath, ios::ate | ios::binary);
-//		qFile.write((char *)this, sizeof(Question));
-//		n_Questions++;
-//	}
 };
 
 class Game
@@ -91,20 +85,47 @@ class Game
 		Also handles the game scores and the UI
 		Author: Kritik
 	*/
-
-	list<Question> quiz;
+public:
+	vector<Question> quiz;
 	int playerOne, playerTwo;
 	int playerOneScore, playerTwoScore;
 
-	Game(string filePath)
+	Game(int toPlayerOne, int toPlayerTwo)
 	{
 		int sequence[GAME_LENGTH];
 		getRandoms(sequence, GAME_LENGTH);
 		playerOneScore = 0;
 		playerTwoScore = 0;
+		playerOne = toPlayerOne;
+		playerTwo = toPlayerTwo;
+
+		for(int i = 0; i < GAME_LENGTH; i++)
+		{
+			quiz.push_back(getQuestion(sequence[i]));
+        }
 
 		//get questions from 'filePath'
 	}
 
+	Question getQuestion(int fileNumber)
+	{
+		string filePath = to_string(fileNumber).append(".txt");
+		Question quest;
 
+		ifstream file(filePath.c_str());
+
+		getline(file, quest.question);
+		getline(file, quest.optionA);
+		getline(file, quest.optionB);
+		getline(file, quest.optionC);
+		getline(file, quest.optionD);
+
+		string getAnswer;
+		getline(file, getAnswer);
+
+		quest.correctAnswer = getAnswer.at(0);
+
+		return quest;
+	}
 };
+

@@ -7,17 +7,15 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-#include<vector>
 #include<thread>
 #include<string.h>
-#include<sys/ioctl.h>
 #include<pthread.h>
 #include"ENQ_LIB.h"
 
 using namespace std;
 
 #define nPLAYERS 10
-#define nQUESTIONS 3
+#define nQUESTIONS GAME_LENGTH
 
 #define EMPTY      0
 #define PLAYING    1
@@ -183,54 +181,31 @@ int main()
 
 				if(fork())
 				{
-                    cout<<"Player States\n";
-                    for(int i = 0; i <= *thisPlayerIndex; i++)
-                    {
-                        cout<<PlayerState[i]<<" ";
-                    }
-                    cout<<endl;
-                    cout<<"Players\n";
-                    for(int i = 0; i <= *thisPlayerIndex; i++)
-                    {
-                        cout<<Players[i]<<" ";
-                    }
-                    cout<<endl;
 
-                    vector<Question> questions;
+                    Game game(Players[*thisPlayerIndex], Players[*competitorIndex]);
+
+                    /*
+                    * A game object has questions, player descriptors, and player scores
+                    * Game has the following members-
+                    * vector<Question> quiz-----has the questions
+                    * int playerOne, playerTwo-----has the player descriptors
+                    * int playerOneScore, playerTwoScore-----has the player scores
+                    */
 
                     int gameLength = nQUESTIONS;
-                    int playerOneScore = 0, playerTwoScore = 0;
 
                     //SEND THE NUMBER OF QUESTIONS TO PLAYERS
-                    send(Players[*thisPlayerIndex], (int *)&gameLength, sizeof(gameLength), 0);
-                    send(Players[*competitorIndex], (int *)&gameLength, sizeof(gameLength), 0);
+                    send(game.playerOne, (int *)&gameLength, sizeof(gameLength), 0);
+                    send(game.playerTwo, (int *)&gameLength, sizeof(gameLength), 0);
 
-                    //HARDCODED QUESTIONS
-                    questions.push_back(Question("Who am I?", "God", "Kritik", "Batman", "John Cena", 'b'));
-                    questions.push_back(Question("What are you?", "Man", "Funny", "Punny", "Never gonna give you up", 'd'));
-                    questions.push_back(Question("What is 1 + 1?", "2", "3", "11", "company", 'd'));
-
-                    thread pOneThread(playerGame, gameLength, Players[*thisPlayerIndex], questions, &playerOneScore);
-                    thread pTwoThread(playerGame, gameLength, Players[*competitorIndex], questions, &playerTwoScore);
+                    thread pOneThread(playerGame, gameLength, game.playerOne, game.quiz, &game.playerOneScore);
+                    thread pTwoThread(playerGame, gameLength, game.playerTwo, game.quiz, &game.playerTwoScore);
 
                     pOneThread.join();
                     pTwoThread.join();
 
-                    cout<<"Game Over\nPlayer "<<Players[*thisPlayerIndex]<<" scored: "<<playerOneScore;
-                    cout<<"\nPlayer "<<Players[*competitorIndex]<<" scored: "<<playerTwoScore<<endl;
-
-//                    cout<<"Sending length "<<length<<endl;
-//                    send(Players[*competitorIndex], (int *)&length, sizeof(length), 0);
-//
-//                    cout<<"Sending Question "<<buf<<endl;
-//                    send(Players[*thisPlayerIndex], buf, length + 1, 0);
-//                    send(Players[*competitorIndex], buf, length + 1, 0);
-
-//                    cout<<"Sending answer "<<correctAnswer<<endl;
-//                    send(Players[*thisPlayerIndex], (char *)&correctAnswer, sizeof(length), 0);
-//                    send(Players[*competitorIndex], (char *)&correctAnswer, sizeof(length), 0);
-
-					//TODO KRITIK Set up a match between current player and the player whose index we just received
+                    cout<<"Game Over\nPlayer "<<game.playerOne<<" scored: "<<game.playerOneScore;
+                    cout<<"\nPlayer "<<game.playerTwo<<" scored: "<<game.playerTwoScore<<endl;
 
 					close(Players[*thisPlayerIndex]);
 					close(Players[*competitorIndex]);
