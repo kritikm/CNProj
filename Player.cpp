@@ -87,7 +87,7 @@ int main()
         string optionD = receivedQuestion.substr(receivedQuestion.find('?') + 1);
 
         setUpPlayArea(i + 1, question, optionA, optionB, optionC, optionD);
-
+        cin.clear();
         cin>>playerAnswer;
         int state = send(sd, (char *)&playerAnswer, sizeof(length), 0);
         cout<<state<<endl;

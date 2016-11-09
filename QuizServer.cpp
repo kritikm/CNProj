@@ -17,7 +17,7 @@
 using namespace std;
 
 #define nPLAYERS 10
-#define nQUESTIONS 4
+#define nQUESTIONS 3
 
 #define EMPTY      0
 #define PLAYING    1
@@ -55,41 +55,46 @@ int GetFirstWaitingPlayer(int * playerState)
 	return -1;
 }
 
-void playerGame(int sequence, int playerDescriptor, Question toSend, int * playerScore)
+void playerGame(int gameLength, int playerDescriptor, vector<Question> questions, int * playerScore)
 {
-    string toSendString = toSend.question +
-                        toSend.optionA +
-                        "?" + toSend.optionB +
-                        "?" + toSend.optionC +
-                        "?" + toSend.optionD;
-
-    int length = toSendString.length();
-    char * buf = strdup(toSendString.c_str());
-    char correctAnswer = toSend.correctAnswer;
-    char playerAnswer;
-
-    //SEND LENGTH OF THE QUESTION STRING
-    send(playerDescriptor, (int *)&length, sizeof(length), 0);
-
-    //SEND THE QUESTION STRING
-    send(playerDescriptor, buf, length + 1, 0);
-
-    //SEND THE CORRECT ANSWER
-    send(playerDescriptor, (char *)&correctAnswer, sizeof(length), 0);
-
-    //GET ANSWER FROM PLAYER
-    int state = read(playerDescriptor,(char *)&playerAnswer,sizeof(length));
-    cout<<"STATE:"<<state<<"Answer:"<<playerAnswer<<endl;
-    if(playerAnswer == correctAnswer)
+    for(int i = 0; i < gameLength; i++)
     {
-        (*playerScore)++;
-        cout<<"\nPlayer "<<playerDescriptor<<" answered correctly! "<<playerAnswer<<"\n";
+        Question toSend = questions.at(i);
+        string toSendString = toSend.question +
+                            toSend.optionA +
+                            "?" + toSend.optionB +
+                            "?" + toSend.optionC +
+                            "?" + toSend.optionD;
+
+        int length = toSendString.length();
+        char * buf = strdup(toSendString.c_str());
+        char correctAnswer = toSend.correctAnswer;
+        char playerAnswer;
+
+        //SEND LENGTH OF THE QUESTION STRING
+        send(playerDescriptor, (int *)&length, sizeof(length), 0);
+
+        //SEND THE QUESTION STRING
+        send(playerDescriptor, buf, length + 1, 0);
+
+        //SEND THE CORRECT ANSWER
+        send(playerDescriptor, (char *)&correctAnswer, sizeof(length), 0);
+
+        //GET ANSWER FROM PLAYER
+        while(recv(playerDescriptor, &playerAnswer, sizeof(length), 0) == -1);
+        cout<<"Answer:"<<playerAnswer<<endl;
+
+        if(playerAnswer == correctAnswer)
+        {
+            (*playerScore)++;
+            cout<<"\nPlayer "<<playerDescriptor<<" answered correctly! "<<playerAnswer<<"\n";
+        }
+        else
+            cout<<"\nPlayer "<<playerDescriptor<<" answered incorrectly!\n";
+
+        cout<<"Score of Player "<<playerDescriptor<<": "<<*playerScore<<endl;
+
     }
-    else
-        cout<<"\nPlayer "<<playerDescriptor<<" answered incorrectly "<<playerAnswer<<"\n";
-
-    cout<<"Score of Player "<<playerDescriptor<<": "<<*playerScore<<endl;
-
 
 }
 
@@ -201,23 +206,15 @@ int main()
                     send(Players[*competitorIndex], (int *)&gameLength, sizeof(gameLength), 0);
 
                     //HARDCODED QUESTIONS
-                    questions.push_back(Question("This is a question?", "A", "B", "C", "D", 'a'));
                     questions.push_back(Question("Who am I?", "God", "Kritik", "Batman", "John Cena", 'b'));
                     questions.push_back(Question("What are you?", "Man", "Funny", "Punny", "Never gonna give you up", 'd'));
                     questions.push_back(Question("What is 1 + 1?", "2", "3", "11", "company", 'd'));
 
-                    for(int i = 0; i < gameLength; i++)
-                    {
-                        Question toSend = questions.at(i);
+                    thread pOneThread(playerGame, gameLength, Players[*thisPlayerIndex], questions, &playerOneScore);
+                    thread pTwoThread(playerGame, gameLength, Players[*competitorIndex], questions, &playerTwoScore);
 
-                        thread pOneThread(playerGame, i, Players[*thisPlayerIndex], toSend, &playerOneScore);
-                        thread pTwoThread(playerGame, i, Players[*competitorIndex], toSend, &playerTwoScore);
-//                        playerGame(i, Players[*competitorIndex], toSend, &playerTwoScore);
-
-                        pOneThread.join();
-                        pTwoThread.join();
-
-                    }
+                    pOneThread.join();
+                    pTwoThread.join();
 
                     cout<<"Game Over\nPlayer "<<Players[*thisPlayerIndex]<<" scored: "<<playerOneScore;
                     cout<<"\nPlayer "<<Players[*competitorIndex]<<" scored: "<<playerTwoScore<<endl;
