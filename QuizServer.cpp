@@ -10,13 +10,14 @@
 #include<vector>
 #include<thread>
 #include<string.h>
+#include<sys/ioctl.h>
 #include<pthread.h>
 #include"ENQ_LIB.h"
 
 using namespace std;
 
 #define nPLAYERS 10
-#define nQUESTIONS 2
+#define nQUESTIONS 4
 
 #define EMPTY      0
 #define PLAYING    1
@@ -65,7 +66,7 @@ void playerGame(int sequence, int playerDescriptor, Question toSend, int * playe
     int length = toSendString.length();
     char * buf = strdup(toSendString.c_str());
     char correctAnswer = toSend.correctAnswer;
-    char playerAnswer = 'y';
+    char playerAnswer;
 
     //SEND LENGTH OF THE QUESTION STRING
     send(playerDescriptor, (int *)&length, sizeof(length), 0);
@@ -77,15 +78,15 @@ void playerGame(int sequence, int playerDescriptor, Question toSend, int * playe
     send(playerDescriptor, (char *)&correctAnswer, sizeof(length), 0);
 
     //GET ANSWER FROM PLAYER
-    recv(playerAnswer,(char *)&playerAnswer,sizeof(length),MSG_WAITALL);
-
+    int state = read(playerDescriptor,(char *)&playerAnswer,sizeof(length));
+    cout<<"STATE:"<<state<<"Answer:"<<playerAnswer<<endl;
     if(playerAnswer == correctAnswer)
     {
         (*playerScore)++;
-        cout<<"\nPlayer "<<playerDescriptor<<" answered correctly!\n";
+        cout<<"\nPlayer "<<playerDescriptor<<" answered correctly! "<<playerAnswer<<"\n";
     }
     else
-        cout<<"\nPlayer "<<playerDescriptor<<" answered incorrectly\n";
+        cout<<"\nPlayer "<<playerDescriptor<<" answered incorrectly "<<playerAnswer<<"\n";
 
     cout<<"Score of Player "<<playerDescriptor<<": "<<*playerScore<<endl;
 
@@ -112,7 +113,7 @@ int main()
 	struct sockaddr_in servadd;
 	servadd.sin_family = AF_INET;
 	servadd.sin_addr.s_addr = inet_addr("10.0.2.15");
-	servadd.sin_port = htons(9407);
+	servadd.sin_port = htons(PORT);
 
 	//Bind the socket address with the client
 	int bind_result = bind(lsd,(struct sockaddr *)&servadd,sizeof(servadd));
@@ -200,8 +201,10 @@ int main()
                     send(Players[*competitorIndex], (int *)&gameLength, sizeof(gameLength), 0);
 
                     //HARDCODED QUESTIONS
+                    questions.push_back(Question("This is a question?", "A", "B", "C", "D", 'a'));
                     questions.push_back(Question("Who am I?", "God", "Kritik", "Batman", "John Cena", 'b'));
                     questions.push_back(Question("What are you?", "Man", "Funny", "Punny", "Never gonna give you up", 'd'));
+                    questions.push_back(Question("What is 1 + 1?", "2", "3", "11", "company", 'd'));
 
                     for(int i = 0; i < gameLength; i++)
                     {
@@ -209,9 +212,11 @@ int main()
 
                         thread pOneThread(playerGame, i, Players[*thisPlayerIndex], toSend, &playerOneScore);
                         thread pTwoThread(playerGame, i, Players[*competitorIndex], toSend, &playerTwoScore);
+//                        playerGame(i, Players[*competitorIndex], toSend, &playerTwoScore);
 
                         pOneThread.join();
                         pTwoThread.join();
+
                     }
 
                     cout<<"Game Over\nPlayer "<<Players[*thisPlayerIndex]<<" scored: "<<playerOneScore;

@@ -18,6 +18,7 @@
 #include<cstdlib>
 #include<ctime>
 #define GAME_LENGTH 10
+#define PORT 9408
 
 using namespace std;
 

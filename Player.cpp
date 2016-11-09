@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include<string>
-
+#include"ENQ_LIB.h"
 using namespace std;
 
 #define PLAYERFOUND 1
@@ -29,13 +29,14 @@ int main()
 
 	servadd.sin_family = AF_INET;
 	servadd.sin_addr.s_addr = inet_addr("10.0.2.15");
-	servadd.sin_port = htons(9407);
+	servadd.sin_port = htons(PORT);
 
 	sd = socket(AF_INET,SOCK_STREAM,0);
 
-	connect(sd,(struct sockaddr *)&servadd,sizeof(servadd));
+	int state = connect(sd,(struct sockaddr *)&servadd,sizeof(servadd));
+	cout<<"STATE:"<<state<<endl;
 
-	cout<<"Welcome to ENQ\n";
+	cout<<"HMMM...Welcome to ENQ\n";
 	cout<<"What would you like to do?\n";
 	cout<<"1 : Play  2 : Spectate\n";
 	cin>>choice;
@@ -73,7 +74,6 @@ int main()
         buf = new char[length];
         read(sd, buf, length + 1);
         read(sd, &correctAnswer, sizeof(length));
-
 
         string receivedQuestion(buf);
 
