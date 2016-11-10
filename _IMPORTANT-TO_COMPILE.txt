@@ -1,0 +1,5 @@
+To compile QuizServer.cpp
+$g++ -std=c++11 QuizServer.cpp -o QuizServer -lpthread
+
+To compile Player.cpp
+$g++ -std=c++11 Player.cpp -o Player
