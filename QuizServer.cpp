@@ -113,12 +113,8 @@ int main()
 	//Bind the socket address with the client
 	if(bind(lsd,(struct sockaddr *)&servadd,sizeof(servadd)) != 0)
         perror("bind");
-//	if(bind_result==0)
-//	cout<<"Bind Successful\n";
-//	else
-//	cout<<"Bind Failed\n";
 
-	listen(lsd,5);												//TODO not sure whether 5 is OK
+	listen(lsd,5);
 
 	socklen_t clntAddLen;
 
@@ -201,15 +197,15 @@ int main()
                     int playerOneTime, playerTwoTime;
 
                     read(game.playerOne, &game.playerOneScore, sizeof(int));
-//                    read(game.playerOne, &playerOneTime, sizeof(int));
+                    read(game.playerOne, &playerOneTime, sizeof(int));
                     read(game.playerTwo, &game.playerTwoScore, sizeof(int));
-//                    read(game.playerTwo, &playerTwoTime, sizeof(int));
+                    read(game.playerTwo, &playerTwoTime, sizeof(int));
 
-//                    game.playerOneScore = game.playerOneScore * 100 / playerOneTime;
-//                    game.playerTwoScore = game.playerTwoScore * 100 / playerTwoTime;
+                    game.playerOneScore = game.playerOneScore * 100 / playerOneTime;
+                    game.playerTwoScore = game.playerTwoScore * 100 / playerTwoTime;
 
-                    cout<<"Game Over\nPlayer "<<game.playerOne<<" scored: "<<game.playerOneScore;
-                    cout<<"\nPlayer "<<game.playerTwo<<" scored: "<<game.playerTwoScore<<endl;
+                    cout<<"Game Over\nPlayer "<<game.playerOne<<" scored: "<<game.playerOneScore<<" in "<<playerOneTime<<" seconds\n";
+                    cout<<"\nPlayer "<<game.playerTwo<<" scored: "<<game.playerTwoScore<<" in "<<playerTwoTime<<" seconds\n";
 
                     if(game.playerOneScore > game.playerTwoScore)
                     {

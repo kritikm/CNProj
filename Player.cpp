@@ -64,7 +64,7 @@ int main()
 
     read(sd, &gameLength, sizeof(gameLength));
 
-//    time_t start = time(NULL);
+    time_t start = time(NULL);
 
     for(int i = 0; i < gameLength; i++)
     {
@@ -86,7 +86,6 @@ int main()
 
         setUpPlayArea(i + 1, question, optionA, optionB, optionC, optionD);
         cin>>playerAnswer;
-//        cout<<"STATE:"<<state<<" ANSWER:"<<playerAnswer<<endl;
         if(playerAnswer == correctAnswer)
         {
             score++;
@@ -100,10 +99,10 @@ int main()
         cout<<"Your score is "<<score<<endl;
     }
 
-//    int timeTaken = difftime(time(NULL), start);
+    int timeTaken = difftime(time(NULL), start);
     int state;
     send(sd, (int *)&score, sizeof(length), 0);
-//    send(sd, (int *)&timeTaken, sizeof(int), 0);
+    send(sd, (int *)&timeTaken, sizeof(int), 0);
     read(sd, &state, sizeof(length));
 
     switch(state)
