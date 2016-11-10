@@ -29,19 +29,17 @@ int main()
 
 	servadd.sin_family = AF_INET;
 	servadd.sin_addr.s_addr = inet_addr("10.0.2.15");
-	servadd.sin_port = htons(PORT);
+	servadd.sin_port = htons(9990);
 
 	sd = socket(AF_INET,SOCK_STREAM,0);
 
-	int state = connect(sd,(struct sockaddr *)&servadd,sizeof(servadd));
-	cout<<"STATE:"<<state<<endl;
-
-	cout<<"HMMM...Welcome to ENQ\n";
+	int bt = connect(sd,(struct sockaddr *)&servadd,sizeof(servadd));
+	cout<<"Welcome to ENQ\n";
 	cout<<"What would you like to do?\n";
 	cout<<"1 : Play  2 : Spectate\n";
 	cin>>choice;
 
-	write(sd,&choice,sizeof(&choice));
+	send(sd,(int *)&choice,sizeof(&choice), 0);
 
 	//Get the server response on whether the Player should wait or start match
 	read(sd,&ServerResponse,sizeof(ServerResponse));
@@ -56,7 +54,7 @@ int main()
 
 	//If you have reached this point it means a player has been found
 
-    cout<<"Game started!\n";
+    cout<<"GAME IS ON!\n";
 	char * buf;
     char correctAnswer;
     char playerAnswer;
@@ -65,11 +63,11 @@ int main()
     int gameLength;
 
     read(sd, &gameLength, sizeof(gameLength));
-    cout<<gameLength<<endl;
+
+//    time_t start = time(NULL);
 
     for(int i = 0; i < gameLength; i++)
     {
-        playerAnswer = 'y';
         read(sd, &length, sizeof(length));
         buf = new char[length];
         read(sd, buf, length + 1);
@@ -87,10 +85,8 @@ int main()
         string optionD = receivedQuestion.substr(receivedQuestion.find('?') + 1);
 
         setUpPlayArea(i + 1, question, optionA, optionB, optionC, optionD);
-        cin.clear();
         cin>>playerAnswer;
-        int state = send(sd, (char *)&playerAnswer, sizeof(length), 0);
-        cout<<state<<endl;
+//        cout<<"STATE:"<<state<<" ANSWER:"<<playerAnswer<<endl;
         if(playerAnswer == correctAnswer)
         {
             score++;
@@ -100,16 +96,14 @@ int main()
         {
             cout<<"\nIncorrect Answer!\n";
         }
+
         cout<<"Your score is "<<score<<endl;
     }
 
+//    int timeTaken = difftime(time(NULL), start);
+    send(sd, (int *)&score, sizeof(length), 0);
+//    send(sd, (int *)&timeTaken, sizeof(int), 0);
 
-//	int ques = read(sd, buf, sizeof(buf));
-//	cout<<"Received quest "<<ques<<endl;
-//	read(sd, &correctAnswer, sizeof(correctAnswer));
-//
-//    cout<<"Server sent "<<buf<<" and the correct answer is "<<correctAnswer;
-	//TODO KRITIK implement code here to handle the game
 
 	return 0;
 

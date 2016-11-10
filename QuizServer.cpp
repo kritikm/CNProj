@@ -55,8 +55,11 @@ int GetFirstWaitingPlayer(int * playerState)
 
 void playerGame(int gameLength, int playerDescriptor, vector<Question> questions, int * playerScore)
 {
+    int score = 0;
+
     for(int i = 0; i < gameLength; i++)
     {
+
         Question toSend = questions.at(i);
         string toSendString = toSend.question +
                             toSend.optionA +
@@ -67,7 +70,6 @@ void playerGame(int gameLength, int playerDescriptor, vector<Question> questions
         int length = toSendString.length();
         char * buf = strdup(toSendString.c_str());
         char correctAnswer = toSend.correctAnswer;
-        char playerAnswer;
 
         //SEND LENGTH OF THE QUESTION STRING
         send(playerDescriptor, (int *)&length, sizeof(length), 0);
@@ -77,23 +79,9 @@ void playerGame(int gameLength, int playerDescriptor, vector<Question> questions
 
         //SEND THE CORRECT ANSWER
         send(playerDescriptor, (char *)&correctAnswer, sizeof(length), 0);
-
-        //GET ANSWER FROM PLAYER
-        while(recv(playerDescriptor, &playerAnswer, sizeof(length), 0) == -1);
-        cout<<"Answer:"<<playerAnswer<<endl;
-
-        if(playerAnswer == correctAnswer)
-        {
-            (*playerScore)++;
-            cout<<"\nPlayer "<<playerDescriptor<<" answered correctly! "<<playerAnswer<<"\n";
-        }
-        else
-            cout<<"\nPlayer "<<playerDescriptor<<" answered incorrectly!\n";
-
-        cout<<"Score of Player "<<playerDescriptor<<": "<<*playerScore<<endl;
-
     }
 
+    read(playerDescriptor, playerScore, sizeof(playerScore));
 }
 
 int main()
@@ -116,14 +104,15 @@ int main()
 	struct sockaddr_in servadd;
 	servadd.sin_family = AF_INET;
 	servadd.sin_addr.s_addr = inet_addr("10.0.2.15");
-	servadd.sin_port = htons(PORT);
+	servadd.sin_port = htons(9990);
 
 	//Bind the socket address with the client
-	int bind_result = bind(lsd,(struct sockaddr *)&servadd,sizeof(servadd));
-	if(bind_result==0)
-	cout<<"Bind Successful\n";
-	else
-	cout<<"Bind Failed\n";
+	if(bind(lsd,(struct sockaddr *)&servadd,sizeof(servadd)) != 0)
+        perror("bind");
+//	if(bind_result==0)
+//	cout<<"Bind Successful\n";
+//	else
+//	cout<<"Bind Failed\n";
 
 	listen(lsd,5);												//TODO not sure whether 5 is OK
 
@@ -201,11 +190,23 @@ int main()
                     thread pOneThread(playerGame, gameLength, game.playerOne, game.quiz, &game.playerOneScore);
                     thread pTwoThread(playerGame, gameLength, game.playerTwo, game.quiz, &game.playerTwoScore);
 
+
                     pOneThread.join();
                     pTwoThread.join();
 
+                    int playerOneTime, playerTwoTime;
+
+                    read(game.playerOne, &game.playerOneScore, sizeof(int));
+//                    read(game.playerOne, &playerOneTime, sizeof(int));
+                    read(game.playerTwo, &game.playerTwoScore, sizeof(int));
+//                    read(game.playerTwo, &playerTwoTime, sizeof(int));
+
+//                    game.playerOneScore = game.playerOneScore * 100 / playerOneTime;
+//                    game.playerTwoScore = game.playerTwoScore * 100 / playerTwoTime;
+
                     cout<<"Game Over\nPlayer "<<game.playerOne<<" scored: "<<game.playerOneScore;
                     cout<<"\nPlayer "<<game.playerTwo<<" scored: "<<game.playerTwoScore<<endl;
+
 
 					close(Players[*thisPlayerIndex]);
 					close(Players[*competitorIndex]);

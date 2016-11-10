@@ -18,8 +18,8 @@
 #include<cstdlib>
 #include<ctime>
 
-#define GAME_LENGTH 2
-#define PORT 9408
+#define GAME_LENGTH 5
+#define PORT 8765
 
 using namespace std;
 
@@ -41,7 +41,7 @@ void getRandoms(int * arr, int size)
 		int gen;
 
 		do {
-			gen = rand() % size + 1;
+			gen = rand() % 10 + 1;
 		} while (Exists(arr, i, gen));
 
 		arr[i] = gen;
