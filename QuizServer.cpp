@@ -27,6 +27,10 @@ using namespace std;
 #define PLAYERFOUND 1
 #define NOPLAYERFOUND -1
 
+#define RESULT_WIN 1
+#define RESULT_LOSE 2
+#define RESULT_TIE 3
+
 //Returns index of the next empty slot in the array
 int GetNextEmptyIndex(int * arr)
 {
@@ -206,6 +210,30 @@ int main()
 
                     cout<<"Game Over\nPlayer "<<game.playerOne<<" scored: "<<game.playerOneScore;
                     cout<<"\nPlayer "<<game.playerTwo<<" scored: "<<game.playerTwoScore<<endl;
+
+                    if(game.playerOneScore > game.playerTwoScore)
+                    {
+                        int state = RESULT_WIN;
+                        cout<<"PLAYER "<<game.playerOne<<" WINS!\n";
+                        send(game.playerOne, &state, sizeof(int), 0);      //SEND WIN TO PLAYER
+                        state = RESULT_LOSE;
+                        send(game.playerTwo, &state, sizeof(int), 0);     //SEND LOSE TO PLAYER
+                    }
+                    else if(game.playerOneScore < game.playerOneScore)
+                    {
+                        int state = RESULT_LOSE;
+                        send(game.playerOne, &state, sizeof(int), 0);
+                        state = RESULT_WIN;
+                        send(game.playerTwo, &state, sizeof(int), 0);
+                        cout<<"PLAYER "<<game.playerTwo<<" WINS!\n";
+                    }
+                    else
+                    {
+                        int state = RESULT_TIE;
+                        send(game.playerOne, &state, sizeof(int), 0);
+                        send(game.playerTwo, &state, sizeof(int), 0);
+                        cout<<"THE GAME IS A TIE\n";
+                    }
 
 
 					close(Players[*thisPlayerIndex]);

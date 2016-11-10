@@ -101,8 +101,27 @@ int main()
     }
 
 //    int timeTaken = difftime(time(NULL), start);
+    int state;
     send(sd, (int *)&score, sizeof(length), 0);
 //    send(sd, (int *)&timeTaken, sizeof(int), 0);
+    read(sd, &state, sizeof(length));
+
+    switch(state)
+    {
+        case 1:
+            cout<<"CONGRATULATIONS! You win!\n";
+            break;
+
+        case 2:
+            cout<<"YOU LOST! But this game is always on your computer to replay\n";
+            break;
+
+        case 3:
+            cout<<"WHOA! The game was a TIE\n";
+            break;
+    }
+
+    close(sd);
 
 
 	return 0;
