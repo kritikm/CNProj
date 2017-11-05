@@ -109,7 +109,9 @@ public:
 
 	Question getQuestion(int fileNumber)
 	{
-		string filePath = to_string(fileNumber).append(".txt");
+		string base_file = "Questions\";
+		string filePath = base_file.append(to_string(fileNumber));
+		filePath = filePath.append(".txt");
 		Question quest;
 
 		ifstream file(filePath.c_str());
