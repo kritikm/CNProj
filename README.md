@@ -14,4 +14,4 @@ To compile Player.cpp
 `$g++ -std=c++11 Player.cpp -o Player`
 
 
-![Example Image](/Loser Player.png?raw=true "Optional Title")
+![Example Image](https://github.com/kritikm/ENQ/blob/master/Server.png?raw=true "Optional Title")
