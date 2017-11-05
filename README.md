@@ -7,7 +7,10 @@ The entire application is written in C++ and concepts of socket programming are 
 
 To compile QuizServer.cpp
 
-$g++ -std=c++11 QuizServer.cpp -o QuizServer -lpthread
+`$g++ -std=c++11 QuizServer.cpp -o QuizServer -lpthread`
 
 To compile Player.cpp
-$g++ -std=c++11 Player.cpp -o Player
+
+`$g++ -std=c++11 Player.cpp -o Player`
+
+
